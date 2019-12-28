@@ -30,5 +30,5 @@ void loop() {
   } else {
     Serial.println("done\n");
   }
-  delay(5000);
+  delay(2000);
 }

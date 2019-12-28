@@ -29,25 +29,25 @@ void loop(void) {
   byte addr[8];
 
   if ( !ds.search(addr)) {
-      Serial.print("No more addresses.\r\n");
+      Serial.println("end");
+      Serial.println(" ");
       ds.reset_search();
       return;
   }
 
   Serial.print("Address: ");
   printData(addr, 8, ":");
-  Serial.print(" ");
 
   if ( OneWire::crc8( addr, 7) != addr[7]) {
-      Serial.print("CRC is not valid!\r\n");
+      Serial.print(", CRC is not valid!\r\n");
       return;
   }
 
   if ( addr[0] == 0x10) {
-      Serial.print("Device is a DS18S20 family device.\r\n");
+      Serial.print(", DS18S20");
   }
   else if ( addr[0] == 0x28) {
-      Serial.print("Device is a DS18B20 family device.\r\n");
+      Serial.print(", DS18B20");
   }
   else {
       Serial.print("Device family is not recognized: 0x");
@@ -66,15 +66,29 @@ void loop(void) {
   ds.select(addr);    
   ds.write(0xBE);         // Read Scratchpad
 
-  Serial.print("  P=");
+  Serial.print(", P=");
   Serial.print(present,HEX);
   Serial.print(" ");
   for ( i = 0; i < 9; i++) {           // we need 9 bytes
     data[i] = ds.read();
   }
   printData(data, 9, ", ");
-  Serial.print(" CRC=");
-  Serial.print( OneWire::crc8( data, 8), HEX);
-  Serial.println();
+  Serial.print(", ");
+  unsigned int raw = (data[1] << 8) | data[0];
+  if (addr[0] == 0x10) {
+    raw = raw << 3; // 9 bit resolution default
+    if (data[7] == 0x10) {
+      // count remain gives full 12 bit resolution
+      raw = (raw & 0xFFF0) + 12 - data[6];
+    }
+  } else {
+    byte cfg = (data[4] & 0x60);
+    if (cfg == 0x00) raw = raw << 3;  // 9 bit resolution, 93.75 ms
+    else if (cfg == 0x20) raw = raw << 2; // 10 bit res, 187.5 ms
+    else if (cfg == 0x40) raw = raw << 1; // 11 bit res, 375 ms
+    // default is 12 bit resolution, 750 ms conversion time
+  }
+  float celsius = (float)raw / 16.0;
+  Serial.println(celsius);
 }
 

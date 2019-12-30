@@ -1,4 +1,5 @@
-#include <Adafruit_GPS.h>
+#include <Arduino.h>
+#include <MTK3339.h>
 
 Adafruit_GPS gps(&Serial1);
 

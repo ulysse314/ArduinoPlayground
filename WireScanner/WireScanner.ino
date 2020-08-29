@@ -13,10 +13,18 @@ void setup() {
   }
 }
 
+int counter = 0;
+
 void loop() {
   int devicesFound = 0;
   digitalWrite(13, HIGH);
-  Serial.println("Scanning...");
+  Serial.print("Scanning ");
+  Serial.print(++counter);
+  Serial.println(" ...");
+  if (false) {
+     delay(500);
+     return;
+  }
   for(byte address = 1; address < 127; address++ ) {
     Wire.beginTransmission(address);
     byte error = Wire.endTransmission();
@@ -37,7 +45,9 @@ void loop() {
   if (devicesFound == 0) {
     Serial.println("No I2C devices found\n");
   } else {
-    Serial.println("done\n");
+    Serial.print("Found: ");
+    Serial.print(devicesFound);
+    Serial.println("\n");
   }
-  delay(2000);
+  delay(500);
 }

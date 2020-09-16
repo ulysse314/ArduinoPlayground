@@ -16,6 +16,8 @@ void printData(byte *data, int size, const char *separator) {
   }
 }
 
+size_t counter = 0;
+
 void setup(void) {
   // initialize inputs/outputs
   // start serial port
@@ -29,12 +31,15 @@ void loop(void) {
   byte addr[8];
 
   if ( !ds.search(addr)) {
-      Serial.println("end");
+      Serial.print("Found: ");
+      Serial.println(counter);
       Serial.println(" ");
       ds.reset_search();
+      counter = 0;
       return;
   }
 
+  ++counter;
   Serial.print("Address: ");
   printData(addr, 8, ":");
 
